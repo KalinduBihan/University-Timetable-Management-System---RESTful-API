@@ -19,7 +19,7 @@ This repository houses a robust API solution tailored specifically for managing 
 
 To run this project, you will need to add the following environment variables to your .env file
 
-`PORT` -  
+`PORT` - Port that server will listen on
 `MONGO_URI` - Mongo db URL  
 `SECRET` - JWT token  
 `CORDINATOR` - Admin mail  
