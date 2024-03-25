@@ -31,7 +31,9 @@ const createTimetable = async (req, res) => {
   }
 
   //Check if the new timetable inputs will overlap.
-  const overlaps = await checkOverlaps(timeSlots);
+  const overlaps = await checkOverlaps(timeSlots, day);
+
+  console.log(overlaps);
 
   //store the overlap records in the response
   const responses = [];
@@ -198,7 +200,8 @@ const getUpdatingFields = async (timeSlotsRecs, timeSlots) => {
 };
 
 //checking overlapping slots
-const checkOverlaps = async (updatingFields, res) => {
+const checkOverlaps = async (updatingFields, Day, res) => {
+  console.log("Checking", updatingFields);
   const isBooked = [];
   try {
     //get the booking record from the database bookings table
@@ -209,7 +212,8 @@ const checkOverlaps = async (updatingFields, res) => {
         if (
           slot2.startTime === slot1.from &&
           slot2.endTime === slot1.to &&
-          slot2.location === slot1.roomId
+          slot2.location === slot1.roomId &&
+          slot1.day === Day
         ) {
           isBooked.push(slot1);
         }
@@ -239,12 +243,18 @@ const updateTimetable = async (req, res) => {
     //find the matching timetable record
     const bookSlots = await Timetable.findById(id);
 
+    if (_.isEmpty(bookSlots)) {
+      return res.status(404).json({ message: "No timetable record found." });
+    }
+
     //get the timeSlots details from db before updating
     const timeSlotsRecs = bookSlots.timeSlots;
 
     const updatingFields = await getUpdatingFields(timeSlotsRecs, timeSlots);
 
-    const overlaps = await checkOverlaps(updatingFields);
+    const overlaps = await checkOverlaps(updatingFields, Day);
+
+    // console.log(overlaps);
 
     //store the overlap records in the response
     const responses = [];
@@ -324,7 +334,42 @@ const deleteTimetable = async (req, res) => {
       .status(200)
       .json({ success: true, message: `record ${id} is deleted.` });
   } catch (err) {
-    res.status(500).json({ success: false, error: "Server Error" });
+    res
+      .status(500)
+      .json({ success: false, error: "deleteFullTimetable:" + err.message });
+  }
+};
+
+const deleteFullTimetable = async (req, res) => {
+  try {
+    const { faculty, code } = req.body;
+    const timetableRecs = await Timetable.find({ faculty, code });
+
+    if (_.isEmpty(timetableRecs)) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No such timetable." });
+    }
+
+    console.log("timetableRecs: ", timetableRecs);
+
+    const tIds = [];
+    timetableRecs.forEach((record) => {
+      tIds.push(record._id);
+    });
+
+    tIds.forEach(async (record) => {
+      // console.log(await Booking.find({ refId: record }));
+      await Timetable.findOneAndDelete(record);
+      await Booking.deleteMany({ refId: record });
+      console.log(`Timetable ${record} deleted.`);
+    });
+
+    res.status(200).json({ success: true, timetableRecs: tIds });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, error: "deleteFullTimetable:" + error.message });
   }
 };
 
@@ -335,5 +380,6 @@ module.exports = {
   deleteTimetable,
   getTimetableByCode,
   getTimetableByDay,
+  deleteFullTimetable,
   timetableAuth,
 };

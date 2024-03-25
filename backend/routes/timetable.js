@@ -6,6 +6,7 @@ const {
   deleteTimetable,
   getTimetableByCode,
   getTimetableByDay,
+  deleteFullTimetable,
   timetableAuth,
 } = require("../controllers/timetableController");
 const { checkRole } = require("../controllers/authController");
@@ -34,5 +35,7 @@ router.patch("/:id", timetableAuth, checkRole(["admin"]), updateTimetable);
 
 // Delete a timetable entry
 router.delete("/:id", timetableAuth, checkRole(["admin"]), deleteTimetable);
+
+router.delete("/", timetableAuth, checkRole(["admin"]), deleteFullTimetable);
 
 module.exports = router;
