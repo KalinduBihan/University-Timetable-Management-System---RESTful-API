@@ -20,9 +20,13 @@ This repository houses a robust API solution tailored specifically for managing 
 To run this project, you will need to add the following environment variables to your .env file
 
 `PORT` - Port that server will listen on
-`MONGO_URI` - Mongo db URL  
-`SECRET` - JWT token  
-`CORDINATOR` - Admin mail  
+
+`MONGO_URI` - Mongo db URL
+
+`SECRET` - JWT token
+
+`CORDINATOR` - Admin mail
+
 `APP_PASSWORD` - Secret mail password for gmail service (nodemailer)
 
 ## Installation
