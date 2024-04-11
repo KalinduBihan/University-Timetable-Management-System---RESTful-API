@@ -30,7 +30,8 @@ router.post("/login", async (req, res) => {
   //get the assigned role
   const user = await User.findOne({ email });
 
-  await login(req.body, user.role, res);
+  await login(req.body, res);
+  // await login(req.body, user.role, res);
 });
 
 //get user Profile
